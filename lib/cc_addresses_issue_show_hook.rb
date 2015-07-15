@@ -3,10 +3,18 @@
 module Redmine
   module Hook
     class ViewListener
-      def self.render_on(hook, options={})
+
+      def self.render_on(hook, *render_options)
         define_method hook do |context|
-          if !options.include?(:if) || evaluate_if_option(options[:if], context)
-            context[:controller].send(:render_to_string, {:locals => context}.merge(options))
+          render_options.map do |options|
+            if context[:hook_caller].respond_to?(:render)
+              context[:hook_caller].send(:render, {:locals => context}.merge(options))
+            elsif context[:controller].is_a?(ActionController::Base) ||
+                  options.include?(:if) && evaluate_if_option(options[:if], context)
+              context[:controller].send(:render_to_string, {:locals => context}.merge(options))
+            else
+              raise "Cannot render #{self.name} hook from #{context[:hook_caller].class.name}"
+            end
           end
         end
       end
@@ -19,7 +27,7 @@ module Redmine
           send(if_option, context)
         when Method, Proc
           if_option.call(context)
-        end        
+        end
       end
     end
   end
@@ -37,7 +45,7 @@ class ShowCcAddressesHook < Redmine::Hook::ViewListener
       end
     end
   end
-    
+
 private
   def protect_against_forgery?
     false
@@ -49,5 +57,5 @@ private
 
   def can_add_cc_addresses?(context)
     context[:project].module_enabled?('cc_addresses') and User.current.allowed_to?(:add_cc_addresses, context[:project]) and context[:issue].new_record?
-  end  
+  end
 end
