@@ -1,8 +1,8 @@
 en:
-  label_cc_address: Address
-  label_add_cc_address: Add Address
-  label_remove_cc_address: Remove Address
-  field_cc_addresses: CC Addresses
+  label_cc_address: E-mail
+  label_add_cc_address: Add address
+  label_remove_cc_address: Remove address
+  field_cc_addresses: CC'ed e-mail addresses
   activerecord:
     errors:
       models:

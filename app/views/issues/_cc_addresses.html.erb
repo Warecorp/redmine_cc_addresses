@@ -1,6 +1,6 @@
+<% if @issue.project.module_enabled?(:cc_addresses) %>
 <div id="cc-addresses">
-  <hr />
-
+<hr />
   <div class="contextual">
   <% if authorize_for('cc_addresses', 'create') %>
       <%= toggle_link l(:button_add), 'new-cc-address-form' %>
@@ -8,12 +8,56 @@
   </div>
 
   <p><strong><%= l(:field_cc_addresses) %></strong></p>
-  <%= render :partial => 'issues/cc_addresses/list', :locals => {:issue => @issue} %>
 
-  <%= form_for(:new_address,
+<% if @issue.cc_addresses.any? %>
+  <div class="wiki">
+    <ul>
+      <table style="width: 100%; border: 0; margin-bottom: 0;">
+        <% @issue.cc_addresses.each do |cc_address| %>
+          <tr id="cc_address_<%= cc_address.id %>">
+            <td style="border: 0; padding: 0;">
+              <li>
+                <%= mail_to cc_address.mail, nil, { :subject => @issue.subject } %>
+              </li>
+            </td>
+            <% if authorize_for('cc_addresses', 'destroy') %>
+              <td style="border: 0; padding: 0;">
+              <td style="border: 0; padding: 0;">
+                <%= link_to 'Delete', { :controller => 'cc_addresses', :action => 'destroy', :issue_id => @issue, :id => cc_address.id },
+                      :method => :post, :remote => true %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </table>
+    </ul>
+  </div>
+<% else %>
+<div class="wiki">
+  <ul>
+    <li><em><%= l(:label_none) %></em></li>
+  </ul>
+</div>
+<% end %>
+
+  <%= form_for CcAddress.new, {
+       :as => :new_address, :remote => true,
        :url => {:controller => :cc_addresses, :action => :create, :issue_id => @issue },
        :method => :post,
-       :html => {:id => 'new-cc-address-form', :style => (@cc_address ? '' : 'display: none;')}) do |f| %>
-    <%= render :partial => 'issues/cc_addresses/form', :locals => { :f => f, :issue_id => @issue }%>
+       :html => {:id => 'new-cc-address-form', :style => (@cc_address ? '' : 'display: none;')} 
+       } do |f| %>
+   <table>
+  <tr>
+    <td><%= l(:label_cc_address) %>:</td>
+    <td><%= f.text_field :mail, size: 32 %><%= f.hidden_field :issue_id, :value => @issue.id %></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <%= submit_tag l(:button_add) %>
+      <%= toggle_link l(:button_cancel), 'new-cc-address-form'%>
+    </td>
+  </tr>
+</table>
   <% end %>
 </div>
+<% end %>

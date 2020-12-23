@@ -1,4 +1,4 @@
-class CreateCcAddresses < ActiveRecord::Migration
+class CreateCcAddresses < ActiveRecord::Migration[5.2]
   def self.up
     create_table :cc_addresses do |t|
       t.string :mail
